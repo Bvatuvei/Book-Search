@@ -27,9 +27,31 @@ const resolvers = {
         if (!correctPw) {
             throw new AuthenticationError('Wrong password')
         }
+        const token = signToken(user)
+        return { token, user }
     },
-   // saveBook: async
-   // removeBook: async 
+   saveBook: async(parent, { bookData }, context) => {
+    if (context.user) {
+        const updatedUser = await User.findByIdAndUpdate(
+        {_id: context.user._id},
+        {$push: {savedBooks: bookData}},
+        {new: true}
+        )
+        return updatedUser;
+    }
+    throw new AuthenticationError('Cant save book')
+   },
+     removeBook: async(parent, { bookId }, context) => {
+        if (context.user) {
+            const updatedUser = await User.findByIdAndUpdate(
+                {_id: context.user._id},
+                {$pull: {savedBooks: {bookId}}},
+                {new: true}
+            )
+            return updatedUser;
+        }
+        throw new AuthenticationError('cant remove book')
+     }
   }
 };
 
